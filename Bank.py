@@ -16,6 +16,8 @@ class Bank:
             print("Sorry, account number must be an integer.")
         if isinstance(balance, float):
             pass
+        elif isinstance(balance, int):
+            pass
         else:
             print("Sorry, balance must be a number.")
 
@@ -31,6 +33,7 @@ class Bank:
             return False
         else:
             self.balance = balance - am
+            self.balance = round(self.balance, 2)
             print("Withdrawal made! New balance is $" + str(self.balance) + ".")
             return self.balance
 
