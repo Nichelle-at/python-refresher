@@ -50,5 +50,9 @@ class Bank:
 
     def checkBalance(self):
         """Returns account balance."""
-        print("Your current balance is $" + str(self.balance) + ".")
-        return self.balance
+        if self.balance < 0:
+            print("In debt :(")
+            return False
+        else:
+            print("Your current balance is $" + str(self.balance) + ".")
+            return self.balance
