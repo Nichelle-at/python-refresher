@@ -99,15 +99,70 @@ def calculate_auv2_acceleration_m2(T, alpha, theta):
 
 print(calculate_auv_acceleration(100, 0.5))
 
-print(calculate_auv2_acceleration([4, 8, 0, 3], (5 * sp.pi) / 6, sp.pi / 8))
-print(calculate_auv2_acceleration_m2([4, 8, 0, 3], (5 * sp.pi) / 6, sp.pi / 8))
+print(calculate_auv2_acceleration([10, 1, 4, 0], 0.12, 0.5))
+print(calculate_auv2_acceleration_m2([10, 1, 4, 0], 0.12, 0.5))
 
 
-def calculate_auv2_angular_acceleration(T, alpha, L):
+def calculate_auv2_angular_acceleration(T, alpha, L, mass):
     Tau1 = L * T[0] * sp.sin(alpha)
     Tau2 = L * T[1] * sp.sin(-alpha)
     Tau3 = L * T[2] * sp.sin(sp.pi + alpha)
     Tau4 = L * T[3] * sp.sin(sp.pi - alpha)
-    I = 100 * (L ^ 2)
-    netTau = Tau1 + Tau2 + Tau3 + Tau4
-    return netTau / I
+    return (Tau1 + Tau2 + Tau3 + Tau4) / (100)
+
+
+print(calculate_auv2_angular_acceleration([10, 1, 4, 0], 0.5, 2, 100))
+
+
+# Problem 10:
+def simulate_auv2_motion(T, alpha, L, t_final, x0, y0, theta0, mass):
+    t = np.arange(0, 10.1, 0.1)
+    theta = theta0
+    x_pos = x0
+    y_pos = y0
+    velocityx = 0
+    velocityy = 0
+    angv0 = 0
+    strtvx = velocityx
+    strtvy = velocityy
+    strtangv = angv0
+    x = np.array([x0])
+    y = np.array([y0])
+    v = np.array([])
+    theta_log = np.array([0])
+    omega = np.array([])
+    a = np.array([])
+    for n in t:
+        strt = theta
+        theta = calculate_auv2_angular_acceleration(T, alpha, L, mass)
+        theta = strt + theta
+        theta_log[0].extend([theta])
+        strtx = x_pos
+        x_pos = calculate_auv2_acceleration_m2(T, alpha, theta)[0]
+        x_pos = strtx + x_pos
+        x[0].extend([x_pos])
+        strty = y_pos
+        y_pos = calculate_auv2_acceleration_m2(T, alpha, theta)[1]
+        y_pos = strty + y_pos
+        y[0].extend([y_pos])
+        velocityx = calculate_auv2_acceleration_m2(T, alpha, theta)[0] / 0.1 + strtvx
+        velocityy = calculate_auv2_acceleration_m2(T, alpha, theta)[1] / 0.1 + strtvy
+        strtvx = velocityx
+        strtvy = velocityy
+        v[n].extend([velocityx, velocityy])
+        omega[n].extend(
+            [
+                calculate_auv2_angular_acceleration(T, alpha, L).Tau1 / 0.1,
+                calculate_auv2_angular_acceleration(T, alpha, L).Tau2 / 0.1,
+                calculate_auv2_angular_acceleration(T, alpha, L).Tau3 / 0.1,
+                calculate_auv2_angular_acceleration(T, alpha, L).Tau4 / 0.1,
+            ]
+        )
+        a[n].extend(
+            [
+                calculate_auv2_acceleration_m2(T, alpha, theta)[0] / (0.1 ^ 2),
+                calculate_auv2_acceleration_m2(T, alpha, theta)[1] / (0.1 ^ 2),
+            ]
+        )
+    data_dict = dict(zip(t, x, y, v, theta_log, omega, a))
+    return
